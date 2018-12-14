@@ -21,13 +21,14 @@ a Compute VM.
 There are two benefits over the existing solution:
 * in a cloud environment security really matters. So, running the SPDK
   vhost target inside a VM instead of host user space is definitely
-  better in terms if security.
+  better in terms of security.
 * this will enable the users in the cloud to create their own storage
-  devices for their compute VMs. This was not possible with the previous
-  topology because running the SPDK vhost target on host user space
-  could only be done by the cloud provider. So, with this topology,
-  users can create their own custom storage devices because they can run
-  themselves the SPDK vhost app.
+  devices for their compute VMs. The user gains control of his storage. You
+  can have full control of what your application will be seeing as storage
+  devices. This was not possible with the previous topology because running the
+  SPDK vhost target on host user space could only be done by the cloud provider.
+  So, with this topology, users can create their own custom storage devices
+  because they can run themselves the SPDK vhost app.
 
 ## How does it work
 
@@ -59,7 +60,7 @@ This device solves the above problems as follows:
 
 ## Step-by-step Guide
 
-SPDK version: [https://github.com/ndragazis/spdk](https://github.com/ndragazis/spdk)
+SPDK version: [https://github.com/ndragazis/spdk](https://github.com/ndragazis/spdk)\
 QEMU version: [https://github.com/stefanha/qemu/tree/virtio-vhost-user](https://github.com/stefanha/qemu/tree/virtio-vhost-user)
 
 1. Compile QEMU and SPDK:
@@ -101,12 +102,9 @@ $ sudo modprobe vfio-pci
 $ cd spdk
 $ sudo scripts/setup.sh
 $ sudo app/vhost/vhost -S "0000:00:07.0" -T "vvu" -m 0x3 &
-$ sudo scripts/rpc.py construct_vhost_scsi_controller --cpumask 0x1
-vhost.0
-$ sudo scripts/rpc.py construct_virtio_pci_scsi_bdev 0000:00:05.0
-VirtioScsi0
-$ sudo scripts/rpc.py construct_nvme_bdev -b NVMe1 -t PCIe -a
-0000:00:06.0
+$ sudo scripts/rpc.py construct_vhost_scsi_controller --cpumask 0x1 vhost.0
+$ sudo scripts/rpc.py construct_virtio_pci_scsi_bdev 0000:00:05.0 VirtioScsi0
+$ sudo scripts/rpc.py construct_nvme_bdev -b NVMe1 -t PCIe -a 0000:00:06.0
 $ sudo scripts/rpc.py construct_malloc_bdev 64 512 -b Malloc0
 $ sudo scripts/rpc.py add_vhost_scsi_lun vhost.0 0 VirtioScsi0t0
 $ sudo scripts/rpc.py add_vhost_scsi_lun vhost.0 1 NVMe1n1
@@ -127,4 +125,6 @@ memory-backend-file,id=mem0,mem-path=/dev/shm/ivshmem,size=1G,share=on \
 
 5. Ensure that the virtio-scsi HBA and the associated SCSI targets are
 visible in the Compute VM:
-```$ lsscsi```
+```
+$ lsscsi
+```
