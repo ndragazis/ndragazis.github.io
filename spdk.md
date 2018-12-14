@@ -115,8 +115,7 @@ $ sudo scripts/rpc.py add_vhost_scsi_lun vhost.0 2 Malloc0
 ```
 $ ./qemu/x86_64-softmmu/qemu-system-x86_64 \
   -M accel=kvm -cpu host -m 1G \
-  -object
-memory-backend-file,id=mem0,mem-path=/dev/shm/ivshmem,size=1G,share=on \
+  -object memory-backend-file,id=mem0,mem-path=/dev/shm/ivshmem,size=1G,share=on \
   -numa node,memdev=mem0 \
   -drive if=virtio,file=image.qcow2,format=qcow2 \
   -chardev socket,id=chardev0,path=vhost-user.sock \
@@ -127,4 +126,20 @@ memory-backend-file,id=mem0,mem-path=/dev/shm/ivshmem,size=1G,share=on \
 visible in the Compute VM:
 ```
 $ lsscsi
+[1:0:0:0]    disk    INTEL    Virtio SCSI Disk 0001  /dev/sda 
+[1:0:1:0]    disk    INTEL    NVMe disk        0001  /dev/sdb 
+[1:0:2:0]    disk    INTEL    Malloc disk      0001  /dev/sdc
+```
+
+The termination procedure goes like this:
+
+6. Shutdown the Compute VM:
+```
+$ sudo poweroff
+```
+
+7. Terminate the SPDK vhost app in the Storage Appliance VM with SIGINT:
+```
+$ fg
+<< Ctrl + C >>
 ```
