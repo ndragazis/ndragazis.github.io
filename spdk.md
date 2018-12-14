@@ -30,7 +30,7 @@ There are two benefits over the existing solution:
   So, with this topology, users can create their own custom storage devices
   because they can run themselves the SPDK vhost app.
 
-## How does it work
+## How it works
 
 Moving the vhost target from host user space to a VM creates three
 issues with the vhost-user transport mechanism that need to be solved.
