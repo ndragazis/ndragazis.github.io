@@ -11,8 +11,8 @@ The code that adds support for the virtio-vhost-user transport in the
 SPDK vhost library is here:
 [https://github.com/ndragazis/spdk](https://github.com/ndragazis/spdk)
 
-Despite the fact that we are talking about vhost-user-scsi devices here,
-the virtio-vhost-user transport is not tight to any type of device.
+Despite the fact that we are talking about virtio-scsi devices here, the
+virtio-vhost-user transport is not tight to any type of device.
 
 ## Topology
 
