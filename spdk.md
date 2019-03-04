@@ -2,12 +2,17 @@
 
 ## Overview
 
-This is an extension of the vhost-user transport mechanism that enables
-deploying the SPDK vhost target into a dedicated Storage Appliance VM
-instead of host user space.
+The virtio-vhost-user transport is an alternative vhost-user transport
+implementation that enables deploying the SPDK vhost target into a
+dedicated Storage Appliance VM instead of host user space. This way we
+can have VMs exposing storage devices to other VMs.
 
-The code is here:
+The code that adds support for the virtio-vhost-user transport in the
+SPDK vhost library is here:
 [https://github.com/ndragazis/spdk](https://github.com/ndragazis/spdk)
+
+Despite the fact that we are talking about vhost-user-scsi devices here,
+the virtio-vhost-user transport is not tight to any type of device.
 
 ## Topology
 
@@ -18,26 +23,36 @@ a Compute VM.
 
 ## Benefits
 
-There are two benefits over the existing solution:
+There are two benefits over the existing `AF_UNIX` transport mechanism
+(defined by the vhost-user protocol
+[specification](https://git.qemu.org/?p=qemu.git;a=blob_plain;f=docs/interop/vhost-user.txt;hb=HEAD)):
+
 * in a cloud environment security really matters. So, running the SPDK
   vhost target inside a VM instead of host user space is definitely
-  better in terms of security.
+  better in terms of security. However, it is important to note that
+  isolating the device inside the Storage Appliance VM does not come to
+  the expense of the I/O performance.  The virtio-vhost-user transport's
+  I/O datapath is as much efficient as the default `AF_UNIX` transport.
+
 * this will enable the users in the cloud to create their own storage
   devices for their compute VMs. The user gains control of his storage. You
   can have full control of what your application will be seeing as storage
-  devices. This was not possible with the previous topology because running the
+  devices. This was not possible with the previous topology, because running the
   SPDK vhost target on host user space could only be done by the cloud provider.
   So, with this topology, users can create their own custom storage devices
   because they can run themselves the SPDK vhost app.
 
 ## How it works
 
-Moving the vhost target from host user space to a VM creates three
-issues with the vhost-user transport mechanism that need to be solved.
+Moving the vhost target from host user space into a VM requires
+extending the vhost-user control plane and data plane. In specific:
+
 1. We need a way so that the vhost-user messages can reach the SPDK
    vhost target.
+
 2. We need a mechanism so that the SPDK vhost target can have access to
    the Compute VM’s file backed memory.
+
 3. We need a way for the SPDK vhost target to interrupt the compute VM.
 
 These are all solved by a special virtio device called
@@ -45,18 +60,25 @@ These are all solved by a special virtio device called
 described here:
 [https://wiki.qemu.org/Features/VirtioVhostUser](https://wiki.qemu.org/Features/VirtioVhostUser)
 
+The device's draft virtio spec is here:
+[https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007](https://stefanha.github.io/virtio/vhost-user-slave.html#x1-2830007)
+
 This device solves the above problems as follows:
+
 1. it reads the messages from the unix socket and passes them into a
    virtqueue. A user space driver in SPDK receives the messages from the
    virtqueue. The received messages are then passed to the SPDK
    vhost-user message handler.
+
 2. it maps the vhost memory regions sent by the master with message
    `VHOST_USER_SET_MEM_TABLE`. The vvu device exposes those regions to the
    guest as a PCI memory region.
+
 3. it intercepts the `VHOST_USER_SET_VRING_CALL` messages and saves the
    callfds for the virtqueues. For each virtqueue, it exposes a doorbell
    to the guest. When this doorbell is kicked from the SPDK vvu driver,
-   the device kicks the corresponding callfd.
+   the device kicks the corresponding callfd. This is how the vhost-user
+   device interrupts are suppored.
 
 ## Step-by-step Guide
 
