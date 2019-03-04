@@ -117,7 +117,8 @@ The SPDK code needs to be accessible to the guest in the Storage
 Appliance VM. A simple solution would be mounting the corresponding host
 directory with sshfs, but it’s up to you.
 
-3. Create the SPDK vhost SCSI target inside the Storage Appliance VM:
+3. Create the SPDK vhost SCSI target inside the Storage Appliance VM. Create a
+   bunch of block devices and attach them on the SCSI transport as SCSI LUNs:
 ```
 $ sudo modprobe vfio enable_unsafe_noiommu_mode=1
 $ sudo modprobe vfio-pci
