@@ -12,7 +12,7 @@ SPDK vhost library is here:
 [https://github.com/ndragazis/spdk](https://github.com/ndragazis/spdk)
 
 Despite the fact that we are talking about virtio-scsi devices here, the
-virtio-vhost-user transport is not tight to any type of device.
+virtio-vhost-user transport is not bound to any type of device.
 
 ## Topology
 
