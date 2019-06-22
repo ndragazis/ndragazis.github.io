@@ -59,7 +59,7 @@ slave:~$ su
 # cd dpdk/
 # ./usertools/dpdk-devbind.py -b vfio-pci '00:07.0'
 # echo 128 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
-slave:~$ sudo ./examples/vhost_scsi/build/vhost-scsi -l 0-1 --pci-whitelist "$VVU_DEVICE" --no-huge -- --virtio-vhost-user-pci "$VVU_DEVICE"
+# ./examples/vhost_scsi/build/vhost-scsi -l 0-1 --pci-whitelist "$VVU_DEVICE" -- --virtio-vhost-user-pci "$VVU_DEVICE"
 ```
 
 #### 2.5 Launch the Compute VM (Master VM):
@@ -89,6 +89,15 @@ $ ssh -p 22224 <username>@localhost
 ```
 master:~$ lsscsi
 [1:0:0:0]    disk    INTEL    vhost_scsi_mall  000   /dev/sda
+```
+
+#### 2.9 Trigger I/O requests:
+```
+master:~$ su
+# mkfs -t ext4 /dev/sda
+# mount /dev/sda /mnt
+# echo "Testing the vhost-scsi example application" > /mnt/foo
+# cat /mnt/foo
 ```
 
 ### 3. Vhost PMD with Testpmd App
